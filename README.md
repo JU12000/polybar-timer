@@ -7,7 +7,7 @@ A configurable CLI timer which can be tailed to the command line. Built for use 
 ### Requirements:
 - [polybar](https://github.com/polybar/polybar)
 
-1. Download the latest release and place it in `~/.config/polybar/scripts/`.
+1. Download the latest release and `notify.ogg` and place them in `~/.config/polybar/scripts/`.
 2. Add it to your `polybar.config`
 
 ```ini
