@@ -52,6 +52,14 @@ fn main() {
 					.default_value("⏸")
 					.help("The icon to display when the timer is paused")
 			)
+			.arg(
+				Arg::new("notification_sound")
+					.short('n')
+					.long("notification-sound")
+					.value_name("FILE_PATH")
+					.value_parser(value_parser!(String))
+					.help("The optional notification sound file to play when a timer finishes.")
+			)
 		)
 		.arg_required_else_help(true)
 		.get_matches();
@@ -103,7 +111,7 @@ fn main() {
 		Some(("tail", sub_args)) => {
 			let play_icon: &str = sub_args.get_one::<String>("play_icon").unwrap().as_str();
 			let pause_icon: &str = sub_args.get_one::<String>("pause_icon").unwrap().as_str();
-
+			
 			while exists("expiry") {
 				let icon;
 
@@ -127,7 +135,14 @@ fn main() {
 				thread::sleep(Duration::from_millis(250));
 
 				if remaining.as_secs() < 1 {
-					play_notification();
+					if sub_args.contains_id("notification_sound") {
+						let notification_sound: &str = sub_args.get_one::<String>("notification_sound")
+							.unwrap()
+							.as_str();
+
+						play_notification(notification_sound);
+					}
+
 					kill_timer_if_exists();
 				}
 			}
@@ -202,12 +217,12 @@ fn print_timer(icon: &str, duration: Duration) {
 	println!("{} {:02}:{:02}", icon, minutes, seconds);
 }
 
-fn play_notification() {
+fn play_notification(path: &str) {
 	let (_stream,stream_handle) = OutputStream::try_default()
 		.unwrap();
 	let sink = Sink::try_new(&stream_handle).unwrap();
 
-	let notify = File::open("notify.ogg").unwrap();
+	let notify = File::open(path).unwrap();
 	let source = Decoder::new(BufReader::new(notify))
 		.unwrap();
 

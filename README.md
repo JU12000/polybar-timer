@@ -14,8 +14,7 @@ A configurable CLI timer which can be tailed to the command line. Built for use 
 [module/polybar-timer]
 type = custom/script
 tail = true
-; See the configuration section below to learn about extra options which can be passed
-exec = ~/.config/polybar/scripts/polybar-timer tail
+exec = ~/.config/polybar/scripts/polybar-timer tail -n ~/.config/polybar/scripts/notify.ogg
 
 ; Configure these with your preferred arguments. A help interface is built in.
 click-left = ~/.config/polybar/scripts/polybar-timer toggle
