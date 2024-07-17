@@ -132,7 +132,7 @@ fn main() {
 				}
 			}
 
-			println!("");
+			println!("00:00");
 		}
 		_ => {
 			process::exit(1)
