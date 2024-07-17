@@ -1,8 +1,9 @@
 use clap::{value_parser, Arg, Command};
 use rodio::{Decoder, OutputStream, Sink};
-use std::{fs::{self, File}, io::{BufReader, ErrorKind}, ops::Add, process, str, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{fs, io::{Cursor, ErrorKind}, ops::Add, process, str, thread, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 const TEMP_DIR: &str = "/tmp/polybar-timer";
+const ALARM: &[u8] = include_bytes!("notify.ogg");
 
 fn main() {
 	let args = Command::new("Polybar Timer")
@@ -51,14 +52,6 @@ fn main() {
 					.value_parser(value_parser!(String))
 					.default_value("⏸")
 					.help("The icon to display when the timer is paused")
-			)
-			.arg(
-				Arg::new("notification_sound")
-					.short('n')
-					.long("notification-sound")
-					.value_name("FILE_PATH")
-					.value_parser(value_parser!(String))
-					.help("The optional notification sound file to play when a timer finishes.")
 			)
 		)
 		.arg_required_else_help(true)
@@ -135,14 +128,7 @@ fn main() {
 				thread::sleep(Duration::from_millis(250));
 
 				if remaining.as_secs() < 1 {
-					if sub_args.contains_id("notification_sound") {
-						let notification_sound: &str = sub_args.get_one::<String>("notification_sound")
-							.unwrap()
-							.as_str();
-
-						play_notification(notification_sound);
-					}
-
+					play_notification();
 					kill_timer_if_exists();
 				}
 			}
@@ -217,14 +203,11 @@ fn print_timer(icon: &str, duration: Duration) {
 	println!("{} {:02}:{:02}", icon, minutes, seconds);
 }
 
-fn play_notification(path: &str) {
+fn play_notification() {
 	let (_stream,stream_handle) = OutputStream::try_default()
 		.unwrap();
 	let sink = Sink::try_new(&stream_handle).unwrap();
-
-	let notify = File::open(path).unwrap();
-	let source = Decoder::new(BufReader::new(notify))
-		.unwrap();
+	let source = Decoder::new(Cursor::new(ALARM)).unwrap();
 
 	sink.append(source);
 
